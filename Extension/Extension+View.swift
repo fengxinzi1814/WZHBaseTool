@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftUI
+
 
 extension UIView{
     /// 部分圆角
@@ -304,3 +304,51 @@ extension UIView {
 }
 
 
+// MARK: GestureRecognizer
+extension UIView {
+    /**添加 tap 事件
+     *新版的Swift闭包做参数默认是@noescaping，不再是@escaping。所以如果函数里异步执行该闭包，要添加@escaping。否则报错：Closure use of non-escaping parameter 'xxx' may allow it to escape.*
+     **/
+    func ls_addTapGes(cb: ((_ cTapGes:UITapGestureRecognizer)->())?) {
+        if !self.isUserInteractionEnabled { self.isUserInteractionEnabled = !self.isUserInteractionEnabled}
+        guard let cb = cb else {return}
+        // #function 当前方法名 , 例如 OC 中的_cmd
+        if ((self.k_getAssociatedObjectWithKey(ckey: #function) as? UITapGestureRecognizer ) == nil) { //如果 view 本身不存在这个tap 事件,添加一个 curGesture 的属性
+            let curGesture = UITapGestureRecognizer(target: self, action: #selector(ls_handleTapGes(tapGes:)))
+            self.addGestureRecognizer(curGesture)
+            self.k_setAssociatedRetainObject(cValue: curGesture, ckey: #function)
+        }
+        let handKey = NSStringFromSelector(#selector(ls_handleTapGes(tapGes:))) //handKey    String    "ls_handleTapGesWithTapGes:"
+        self.k_setAssociatedRetainObject(cValue: cb, ckey:"ls_handleTapGes")
+    }
+    
+    ///触发点击事件
+    @objc func ls_handleTapGes(tapGes : UITapGestureRecognizer) {
+        let handKey = #function  //handKey    String    "ls_handleTapGes(tapGes:)"
+        let cb1 = self.k_getAssociatedObjectWithKey(ckey:"ls_handleTapGes")
+        let cb = self.k_getAssociatedObjectWithKey(ckey:"ls_handleTapGes") as? (_ cTapGes: UITapGestureRecognizer) -> ()
+        cb?(tapGes)
+    }
+    
+    
+    /**添加  长按 事件
+     *新版的Swift闭包做参数默认是@noescaping，不再是@escaping。所以如果函数里异步执行该闭包，要添加@escaping。否则报错：Closure use of non-escaping parameter 'xxx' may allow it to escape.*
+     **/
+    func ls_addLongPressGes(cb:@escaping (_ cLongPressGes:UILongPressGestureRecognizer)->()) {
+        if !self.isUserInteractionEnabled { self.isUserInteractionEnabled = !self.isUserInteractionEnabled}
+        
+        // #function 当前方法名 , 例如 OC 中的_cmd
+        if ((self.k_getAssociatedObjectWithKey(ckey: #function) as? UILongPressGestureRecognizer ) == nil) { //如果 view 本身不存在这个tap 事件,添加一个 curGesture 的属性
+            let curGesture = UILongPressGestureRecognizer(target: self, action: #selector(ls_handleLongPressGes(longPressGes:)))
+            self.addGestureRecognizer(curGesture)
+            self.k_setAssociatedRetainObject(cValue: curGesture, ckey: #function)
+        }
+        self.k_setAssociatedCopyObject(cValue: cb, ckey:NSStringFromSelector(#selector(ls_handleLongPressGes(longPressGes:))))
+    }
+    
+    ///触发长按事件
+    @objc func ls_handleLongPressGes(longPressGes : UILongPressGestureRecognizer) {
+        let cb = self.k_getAssociatedObjectWithKey(ckey: #function) as? (_ cTapGes: UILongPressGestureRecognizer) -> ()
+        cb?(longPressGes)
+    }
+}
