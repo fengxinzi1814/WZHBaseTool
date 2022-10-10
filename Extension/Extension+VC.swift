@@ -37,7 +37,7 @@ extension UIViewController {
     static func k_currentViewController() -> UIViewController
     {
         if let rootVC = UIApplication.shared.delegate?.window??.rootViewController {
-            return self.wr_currentViewController(from: rootVC)
+            return self.k_currentViewController(from: rootVC)
         } else {
             return UIViewController()
         }
